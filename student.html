@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мой дневник</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+  body {
+    background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+    color: white; min-height: 100vh; padding: 15px;
+  }
+  .container { max-width: 700px; margin: 0 auto; }
+
+  /* ===== РЕГИСТРАЦИЯ ===== */
+  .register-box {
+    background: rgba(0,0,0,0.4);
+    border: 2px solid #333;
+    border-radius: 15px;
+    padding: 25px;
+    max-width: 400px;
+    margin: 40px auto;
+    text-align: center;
+  }
+  .register-box h1 {
+    color: #ffaa00; margin-bottom: 10px;
+    font-size: 26px;
+  }
+  .register-box .sub {
+    color: #888; margin-bottom: 25px;
+    font-size: 13px;
+  }
+  .register-box input {
+    width: 100%; padding: 12px;
+    background: #2a2a3e;
+    border: 2px solid #444;
+    border-radius: 10px;
+    color: white; font-size: 16px;
+    margin-bottom: 12px;
+    outline: none;
+  }
+  .register-box input:focus { border-color: #ffaa00; }
+  .register-box button {
+    width: 100%; padding: 14px;
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
+    border: none; border-radius: 10px;
+    color: white; font-size: 16px;
+    font-weight: bold; cursor: pointer;
+    margin-top: 5px;
+  }
+  .register-box button:hover {
+    box-shadow: 0 0 20px rgba(46, 204, 113, 0.5);
+  }
+  .reg-status {
+    padding: 10px; border-radius: 8px;
+    margin-top: 12px; font-size: 13px;
+    display: none;
+  }
+  .reg-status.success {
+    background: rgba(46, 204, 113, 0.2);
+    border: 1px solid #27ae60;
+    color: #2ecc71; display: block;
+  }
+  .reg-status.error {
+    background: rgba(231, 76, 60, 0.2);
+    border: 1px solid #c0392b;
+    color: #e74c3c; display: block;
+  }
+
+  /* ===== ДНЕВНИК ===== */
+  .diary { display: none; }
+  .diary.active { display: block; }
+
+  h1.title {
+    text-align: center; color: #4fff4f;
+    margin-bottom: 10px; font-size: 24px;
+  }
+  .student-info {
+    text-align: center; color: #ffaa00;
+    font-size: 16px; margin-bottom: 20px;
+  }
+  .average-box {
+    background: linear-gradient(135deg, #ffaa00, #ff8c00);
+    color: #111; border-radius: 15px;
+    padding: 20px; text-align: center;
+    margin-bottom: 20px;
+  }
+  .average-box .val { font-size: 48px; font-weight: bold; }
+  .average-box .label { font-size: 14px; opacity: 0.8; }
+  .average-box .rounded { font-size: 16px; margin-top: 5px; }
+  .tabs { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
+  .tab {
+    flex: 1; padding: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid #333;
+    color: white; border-radius: 10px;
+    cursor: pointer; font-size: 13px;
+    min-width: 90px;
+  }
+  .tab.active {
+    background: linear-gradient(90deg, #ff8c00, #ffaa00);
+    color: #111; font-weight: bold;
+  }
+  .panel {
+    display: none;
+    background: rgba(0,0,0,0.4);
+    border: 2px solid #333;
+    border-radius: 15px;
+    padding: 15px;
+  }
+  .panel.active { display: block; }
+  .item {
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .item .head {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 5px;
+    gap: 10px;
+  }
+  .item .subject { color: #ffaa00; font-weight: bold; font-size: 15px; }
+  .grade {
+    font-size: 22px; font-weight: bold;
+    padding: 4px 14px; border-radius: 10px;
+  }
+  .g5 { background: #27ae60; }
+  .g4 { background: #3498db; }
+  .g3 { background: #e67e22; }
+  .g2 { background: #c0392b; }
+  .item .desc { color: #aaa; font-size: 13px; margin-top: 5px; }
+  .item .date { color: #666; font-size: 11px; margin-top: 5px; }
+  .hw-text { color: #ddd; font-size: 14px; margin-top: 5px; }
+  .hw-deadline { color: #ff6060; font-size: 12px; margin-top: 5px; font-weight: bold; }
+  .empty {
+    text-align: center; color: #666;
+    padding: 30px; font-size: 14px;
+  }
+  .sched-day {
+    background: #1a1a2e; border-left: 4px solid #ffaa00;
+    border-radius: 8px; padding: 12px; margin-bottom: 10px;
+  }
+  .sched-day .day-name {
+    color: #ffaa00; font-weight: bold; margin-bottom: 8px;
+  }
+  .sched-lesson {
+    display: flex; justify-content: space-between;
+    padding: 6px 0; border-bottom: 1px solid #2a2a3e;
+    font-size: 13px;
+  }
+  .sched-lesson:last-child { border: none; }
+  .lesson-card {
+    background: #1a1a2e;
+    border: 2px solid #8e44ad;
+    border-radius: 10px;
+    padding: 12px; margin-bottom: 10px;
+  }
+  .lesson-card .topic {
+    color: #bf4fff; font-weight: bold; font-size: 15px;
+  }
+  .lesson-card .plan {
+    color: #ccc; font-size: 13px; margin-top: 8px;
+    white-space: pre-wrap;
+  }
+  .logout {
+    display: block; margin: 20px auto 0;
+    background: #333; border: none;
+    color: #aaa; padding: 8px 20px;
+    border-radius: 8px; cursor: pointer;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- РЕГИСТРАЦИЯ -->
+  <div class="register-box" id="register-box">
+    <h1>📚 Регистрация</h1>
+    <div class="sub">Введи свои данные для входа в дневник</div>
+
+    <input id="reg-surname" placeholder="👤 Фамилия" autocomplete="off">
+    <input id="reg-name" placeholder="📛 Имя" autocomplete="off">
+    <input id="reg-class" placeholder="🎓 Класс (например 5А)" autocomplete="off">
+
+    <button id="btn-register">✅ ЗАРЕГИСТРИРОВАТЬСЯ</button>
+    <div class="reg-status" id="reg-status"></div>
+  </div>
+
+  <!-- ДНЕВНИК -->
+  <div class="diary" id="diary">
+    <h1 class="title">📚 Мой дневник</h1>
+    <div class="student-info" id="student-info"></div>
+
+    <div class="average-box">
+      <div class="val" id="avg-val">—</div>
+      <div class="label">Средний балл</div>
+      <div class="rounded" id="avg-round"></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="grades">📝 Оценки</button>
+      <button class="tab" data-tab="homework">📖 ДЗ</button>
+      <button class="tab" data-tab="schedule">🕐 Расписание</button>
+      <button class="tab" data-tab="lessons">📅 Уроки</button>
+    </div>
+
+    <div class="panel active" id="panel-grades">
+      <div id="grades-list"><div class="empty">Загрузка...</div></div>
+    </div>
+    <div class="panel" id="panel-homework">
+      <div id="hw-list"><div class="empty">Загрузка...</div></div>
+    </div>
+    <div class="panel" id="panel-schedule">
+      <div id="sched-list"><div class="empty">Загрузка...</div></div>
+    </div>
+    <div class="panel" id="panel-lessons">
+      <div id="lessons-list"><div class="empty">Загрузка...</div></div>
+    </div>
+
+    <button class="logout" id="btn-logout">🚪 Выйти</button>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBFmMgkQxwyZi9TUhRmwVuNlUo4TsXJz7s",
+  authDomain: "server-be9c3.firebaseapp.com",
+  databaseURL: "https://server-be9c3-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "server-be9c3",
+  storageBucket: "server-be9c3.firebasestorage.app",
+  messagingSenderId: "423679279923",
+  appId: "1:423679279923:web:1d8cf0d240336f3c223446"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ─── Состояние ───
+let STUDENT = null;   // { surname, name, class, key }
+
+const regBox = document.getElementById("register-box");
+const diaryBox = document.getElementById("diary");
+
+// ─── Проверка сохранённого входа ───
+const savedKey = localStorage.getItem("student_key");
+if (savedKey) {
+  loadStudent(savedKey);
+}
+
+// ─── Регистрация ───
+document.getElementById("btn-register").addEventListener("click", async () => {
+  const surname = document.getElementById("reg-surname").value.trim();
+  const name = document.getElementById("reg-name").value.trim();
+  const classId = document.getElementById("reg-class").value.trim();
+
+  if (!surname || !name || !classId) {
+    showRegStatus("❌ Заполни все поля", "error");
+    return;
+  }
+
+  const key = `${classId}_${surname}_${name}`.replace(/\s+/g, "_");
+
+  try {
+    // Проверить, есть ли уже такой ученик
+    const snap = await get(child(ref(db), "students/" + key));
+
+    if (snap.exists()) {
+      // уже есть — просто входим
+      showRegStatus("✅ Ученик уже зарегистрирован. Входим...", "success");
+      setTimeout(() => {
+        localStorage.setItem("student_key", key);
+        loadStudent(key);
+      }, 800);
+    } else {
+      // создать нового
+      await set(ref(db, "students/" + key), {
+        surname, name, class: classId,
+        created: Date.now()
+      });
+      showRegStatus("✅ Регистрация успешна!", "success");
+      setTimeout(() => {
+        localStorage.setItem("student_key", key);
+        loadStudent(key);
+      }, 800);
+    }
+  } catch (e) {
+    showRegStatus("❌ Ошибка: " + e.message, "error");
+  }
+});
+
+function showRegStatus(text, type) {
+  const el = document.getElementById("reg-status");
+  el.textContent = text;
+  el.className = "reg-status " + type;
+}
+
+// ─── Загрузка ученика ───
+async function loadStudent(key) {
+  try {
+    const snap = await get(child(ref(db), "students/" + key));
+    if (!snap.exists()) {
+      localStorage.removeItem("student_key");
+      return;
+    }
+    STUDENT = { ...snap.val(), key };
+
+    document.getElementById("student-info").textContent =
+      `${STUDENT.class} · ${STUDENT.surname} ${STUDENT.name}`;
+    document.title = `Дневник — ${STUDENT.name}`;
+
+    regBox.style.display = "none";
+    diaryBox.classList.add("active");
+
+    initListeners();
+  } catch (e) {
+    console.error(e);
+    localStorage.removeItem("student_key");
+  }
+}
+
+// ─── Слушатели данных ───
+let listenersStarted = false;
+function initListeners() {
+  if (listenersStarted) return;
+  listenersStarted = true;
+
+  // Табы
+  document.querySelectorAll(".tab").forEach(t => {
+    t.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(x => x.classList.remove("active"));
+      t.classList.add("active");
+      document.getElementById("panel-" + t.dataset.tab).classList.add("active");
+    });
+  });
+
+  // Оценки
+  onValue(ref(db, "diary/" + STUDENT.key + "/grades"), (snap) => {
+    const list = document.getElementById("grades-list");
+    if (!snap.exists()) {
+      list.innerHTML = '<div class="empty">Пока нет оценок</div>';
+      document.getElementById("avg-val").textContent = "—";
+      document.getElementById("avg-round").textContent = "";
+      return;
+    }
+    const data = snap.val();
+    const arr = Object.values(data).sort((a, b) => b.time - a.time);
+    list.innerHTML = "";
+    let sum = 0;
+    arr.forEach(g => {
+      const d = new Date(g.time);
+      const dateStr = d.toLocaleDateString("ru-RU") + " " +
+        d.toLocaleTimeString("ru-RU").slice(0, 5);
+      const el = document.createElement("div");
+      el.className = "item";
+      el.innerHTML = `
+        <div class="head">
+          <span class="subject">${g.subject}</span>
+          <span class="grade g${g.value}">${g.value}</span>
+        </div>
+        ${g.desc ? `<div class="desc">💬 ${g.desc}</div>` : ""}
+        <div class="date">📅 ${dateStr}</div>
+      `;
+      list.appendChild(el);
+      sum += g.value;
+    });
+
+    const avg = sum / arr.length;
+    document.getElementById("avg-val").textContent = avg.toFixed(2);
+    document.getElementById("avg-round").textContent =
+      `${avg.toFixed(2)} → округлённо ${Math.round(avg)}`;
+  });
+
+  // ДЗ
+  onValue(ref(db, "diary/" + STUDENT.key + "/homework"), (snap) => {
+    const list = document.getElementById("hw-list");
+    if (!snap.exists()) {
+      list.innerHTML = '<div class="empty">Нет домашних заданий</div>';
+      return;
+    }
+    const data = snap.val();
+    const arr = Object.values(data).sort((a, b) => b.time - a.time);
+    list.innerHTML = "";
+    arr.forEach(h => {
+      const el = document.createElement("div");
+      el.className = "item";
+      el.innerHTML = `
+        <div class="head">
+          <span class="subject">${h.subject}</span>
+        </div>
+        <div class="hw-text">${h.text}</div>
+        ${h.deadline ? `<div class="hw-deadline">⏰ Сдать до: ${h.deadline}</div>` : ""}
+      `;
+      list.appendChild(el);
+    });
+  });
+
+  // Расписание
+  onValue(ref(db, "schedule/" + STUDENT.class), (snap) => {
+    const list = document.getElementById("sched-list");
+    if (!snap.exists()) {
+      list.innerHTML = '<div class="empty">Расписание пусто</div>';
+      return;
+    }
+    const data = snap.val();
+    list.innerHTML = "";
+    Object.keys(data).forEach(day => {
+      const el = document.createElement("div");
+      el.className = "sched-day";
+      let html = `<div class="day-name">📆 ${day}</div>`;
+      Object.values(data[day]).sort((a, b) => a.num - b.num).forEach(l => {
+        html += `<div class="sched-lesson">
+          <span>№${l.num} ${l.subject}</span>
+          <span>${l.time || ""}</span>
+        </div>`;
+      });
+      el.innerHTML = html;
+      list.appendChild(el);
+    });
+  });
+
+  // Уроки
+  onValue(ref(db, "lessons/" + STUDENT.class), (snap) => {
+    const list = document.getElementById("lessons-list");
+    if (!snap.exists()) {
+      list.innerHTML = '<div class="empty">Уроков пока нет</div>';
+      return;
+    }
+    const data = snap.val();
+    const arr = Object.values(data).sort((a, b) => b.time - a.time);
+    list.innerHTML = "";
+    arr.forEach(l => {
+      const el = document.createElement("div");
+      el.className = "lesson-card";
+      el.innerHTML = `
+        <div class="topic">📖 ${l.subject}: ${l.topic}</div>
+        ${l.date ? `<div style="color:#888; font-size:12px; margin-top:4px;">📅 ${l.date}</div>` : ""}
+        ${l.plan ? `<div class="plan">${l.plan}</div>` : ""}
+      `;
+      list.appendChild(el);
+    });
+  });
+}
+
+// ─── Выход ───
+document.getElementById("btn-logout").addEventListener("click", () => {
+  if (!confirm("Выйти?")) return;
+  localStorage.removeItem("student_key");
+  location.reload();
+});
+</script>
+</body>
+</html>
